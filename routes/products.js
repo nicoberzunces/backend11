@@ -20,12 +20,6 @@ router.post('/', async (req, res) => {
     res.status(201).json(product);
 });
 
-router.put('/:pid', async (req, res) => {
-    const updatedProduct = await productManager.updateProduct(req.params.pid, req.body);
-    if (!updatedProduct) return res.status(404).json({ error: 'Producto no encontrado' });
-    res.json(updatedProduct);
-});
-
 router.delete('/:pid', async (req, res) => {
     const result = await productManager.deleteProduct(req.params.pid);
     if (!result) return res.status(404).json({ error: 'Producto no encontrado' });

@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { io } from '../app.js';
 
 class ProductManager {
     constructor(path) {
@@ -20,16 +21,11 @@ class ProductManager {
         product.id = products.length ? products[products.length - 1].id + 1 : 1;
         products.push(product);
         await fs.writeFile(this.path, JSON.stringify(products, null, 2));
-        return product;
-    }
 
-    async updateProduct(id, updatedFields) {
-        let products = await this.getProducts();
-        const index = products.findIndex(prod => prod.id === parseInt(id));
-        if (index === -1) return null;
-        products[index] = { ...products[index], ...updatedFields };
-        await fs.writeFile(this.path, JSON.stringify(products, null, 2));
-        return products[index];
+        // Notificar a WebSocket
+        io.emit('newProduct', product);
+
+        return product;
     }
 
     async deleteProduct(id) {
@@ -37,6 +33,10 @@ class ProductManager {
         const newProducts = products.filter(prod => prod.id !== parseInt(id));
         if (products.length === newProducts.length) return null;
         await fs.writeFile(this.path, JSON.stringify(newProducts, null, 2));
+
+        // Notificar a WebSocket
+        io.emit('deleteProduct', id);
+
         return true;
     }
 }
